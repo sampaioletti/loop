@@ -1,5 +1,7 @@
 Package Loop allows for a method to schedule loop calls on certain threads.
 
+Inspired by https://github.com/faiface/mainthread but wanted something more focused on GUI loop threads
+
 See examples for usage but in general
 
 ```golang
