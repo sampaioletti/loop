@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -13,16 +14,16 @@ func main() {
 	i := 0
 	//create the first loop, wher its created doesn't matter
 	l1 := loop.NewLoop()
-	l1.AddCall(func() {
+	l1.AddCall(func(context.Context) {
 		fmt.Println("Hello From l1")
 		time.Sleep(time.Second * 1)
 	})
 	go func() {
-		l1.AddCall(func() {
+		l1.AddCall(func(context.Context) {
 			fmt.Println("Hello Again From l1")
 			time.Sleep(time.Second * 5)
 		})
-		l1.Run(nil)
+		l1.Run(context.Background())
 	}()
 	// Watch for values on the count channel
 	go func() {
@@ -37,7 +38,7 @@ func main() {
 	errChan := make(chan error)
 	intChan := make(chan int)
 
-	l2.AddCall(func() {
+	l2.AddCall(func(context.Context) {
 		sum, err := add(i, 10)
 		if err != nil {
 			errChan <- err
@@ -56,7 +57,7 @@ func main() {
 			}
 		}
 	}()
-	l2.AddCall(func() {
+	l2.AddCall(func(context.Context) {
 		fmt.Println("Hello From l2")
 		time.Sleep(time.Second * 1)
 		count <- i
@@ -65,12 +66,12 @@ func main() {
 	go func() {
 		//this should fail
 		time.Sleep(time.Second * 2)
-		err := l2.Run(nil)
+		err := l2.Run(context.Background())
 		if err != nil {
 			fmt.Println(err)
 		}
 	}()
-	fmt.Println(l2.Run(nil))
+	fmt.Println(l2.Run(context.Background()))
 }
 
 func add(a, b int) (int, error) {

@@ -1,6 +1,7 @@
 package loop
 
 import (
+	"context"
 	"errors"
 	"runtime"
 	"sync/atomic"
@@ -10,7 +11,7 @@ import (
 // NewLoop creates a Loop struct, can be called from any thread
 func NewLoop() *Loop {
 	return &Loop{
-		calls: []func(){},
+		calls: []func(context.Context){},
 	}
 }
 
@@ -18,19 +19,19 @@ func NewLoop() *Loop {
 type Loop struct {
 	index   int
 	running int32
-	calls   []func()
+	calls   []func(context.Context)
 }
 
 // Run Starts and Blocks the loop until done is closed
 // call this method from the thread you want it to be run on
-func (l *Loop) Run(done chan struct{}) error {
+func (l *Loop) Run(ctx context.Context) error {
 	if !atomic.CompareAndSwapInt32(&l.running, 0, 1) {
 		return errors.New("Run Allready Called")
 	}
 	runtime.LockOSThread()
 	for {
 		select {
-		case <-done:
+		case <-ctx.Done():
 			l.Close()
 			return nil
 		default:
@@ -42,7 +43,7 @@ func (l *Loop) Run(done chan struct{}) error {
 				l.index = 0
 				continue
 			}
-			l.calls[l.index]()
+			l.calls[l.index](ctx)
 			l.index++
 		}
 	}
@@ -69,7 +70,7 @@ func (l *Loop) Close() error {
 // 	intChan <- sum
 // })
 // [...] deal with channel results
-func (l *Loop) AddCall(call func()) {
+func (l *Loop) AddCall(call func(context.Context)) {
 	l.calls = append(l.calls, call)
 	// l.callQueue <- call
 }

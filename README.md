@@ -8,12 +8,12 @@ See examples for usage but in general
 func main(){
   //create the first loop, where its created doesn't matter
   l1 := loop.NewLoop()
-  l1.AddCall(func() {
+  l1.AddCall(func(context.Context) { //each call added has access to the context for closing the loop
     fmt.Println("Hello From l1")
     time.Sleep(time.Second * 1)
   })
   go func() {
-    l1.AddCall(func() {
+    l1.AddCall(func(context.Context) {
       fmt.Println("Hello Again From l1")
       time.Sleep(time.Second * 5)
         })
@@ -22,7 +22,7 @@ func main(){
   }()
 
   l2 := loop.NewLoop()
-  l2.AddCall(func() {
+  l2.AddCall(func(context.Context) {
     fmt.Println("Hello From l2")
     time.Sleep(time.Second * 1)
     })
