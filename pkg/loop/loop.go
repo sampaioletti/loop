@@ -19,6 +19,8 @@ func NewLoop() *Loop {
 type Loop struct {
 	index   int
 	running int32
+	ctx     context.Context
+	cancel  context.CancelFunc
 	calls   []func(context.Context)
 }
 
@@ -29,9 +31,13 @@ func (l *Loop) Run(ctx context.Context) error {
 		return errors.New("Run Allready Called")
 	}
 	runtime.LockOSThread()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	l.ctx, l.cancel = context.WithCancel(ctx)
 	for {
 		select {
-		case <-ctx.Done():
+		case <-l.ctx.Done():
 			l.Close()
 			return nil
 		default:
@@ -51,6 +57,7 @@ func (l *Loop) Run(ctx context.Context) error {
 
 //Close cleans up the lock
 func (l *Loop) Close() error {
+	l.cancel()
 	runtime.UnlockOSThread()
 	return nil
 }

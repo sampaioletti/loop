@@ -23,7 +23,7 @@ func main() {
 			fmt.Println("Hello Again From l1")
 			time.Sleep(time.Second * 5)
 		})
-		l1.Run(context.Background())
+		l1.Run(nil)
 	}()
 	// Watch for values on the count channel
 	go func() {
@@ -66,12 +66,12 @@ func main() {
 	go func() {
 		//this should fail
 		time.Sleep(time.Second * 2)
-		err := l2.Run(context.Background())
+		err := l2.Run(nil)
 		if err != nil {
 			fmt.Println(err)
 		}
 	}()
-	fmt.Println(l2.Run(context.Background()))
+	fmt.Println(l2.Run(nil))
 }
 
 func add(a, b int) (int, error) {
